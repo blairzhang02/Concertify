@@ -13,8 +13,7 @@ import (
 type ConcertInfo struct {
 	Artist string
 	Venue  string
-	Date   string // You might want to use a proper time.Time depending on your use case
-	// Add other fields as necessary according to the Ticketmaster API response
+	Date   string
 }
 type Config struct {
 	SpotifyID       string `json:"SpotifyID"`
@@ -48,7 +47,6 @@ func main() {
 		log.Fatal("Configuration values cannot be empty. Please check your config file.")
 	}
 
-	// Set up the Spotify authenticator with the credentials from the configuration
 	authenticator = spotify.NewAuthenticator(redirectURL, spotify.ScopeUserTopRead)
 	authenticator.SetAuthInfo(config.SpotifyID, config.SpotifySecret)
 
@@ -72,16 +70,13 @@ func completeAuth(state string, ticketmasterKey string) http.HandlerFunc {
 			http.Error(w, "Couldn't get token", http.StatusForbidden)
 			log.Fatal(err)
 		}
-		// Create a client using the specified token
 		client := authenticator.NewClient(token)
 
-		// Save the client for future use or continue to make your requests
 		handleTopArtistsConcerts(w, r, client, ticketmasterKey)
 	}
 }
 
 func getTopArtists(client spotify.Client) ([]spotify.FullArtist, error) {
-	// Retrieve results from Spotify
 	results, err := client.CurrentUsersTopArtists()
 	if err != nil {
 		return nil, err
@@ -89,7 +84,6 @@ func getTopArtists(client spotify.Client) ([]spotify.FullArtist, error) {
 	return results.Artists, nil
 }
 
-// Assuming you have a function to get artist names from Spotify data
 func getConcertsForArtists(artists []string, ticketmasterApiKey string) ([]ConcertInfo, error) {
 	var concerts []ConcertInfo
 
@@ -97,16 +91,14 @@ func getConcertsForArtists(artists []string, ticketmasterApiKey string) ([]Conce
 		url := fmt.Sprintf("https://app.ticketmaster.com/discovery/v2/events.json?keyword=%s&apikey=%s", artist, ticketmasterApiKey)
 		resp, err := http.Get(url)
 		if err != nil {
-			return nil, err // Handle error appropriately
+			return nil, err
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			// Non-OK status code, handle according to your policy
 			continue
 		}
 
-		// Assuming the structure of the Ticketmaster response here. Adjust according to actual response.
 		var response struct {
 			Embedded struct {
 				Events []struct {
@@ -116,20 +108,19 @@ func getConcertsForArtists(artists []string, ticketmasterApiKey string) ([]Conce
 							DateTime string `json:"dateTime"`
 						} `json:"start"`
 					} `json:"dates"`
-					// ... other necessary fields
 				} `json:"events"`
 			} `json:"_embedded"`
 		}
 
 		err = json.NewDecoder(resp.Body).Decode(&response)
 		if err != nil {
-			return nil, err // Handle error appropriately
+			return nil, err
 		}
 
 		for _, event := range response.Embedded.Events {
 			concerts = append(concerts, ConcertInfo{
 				Artist: artist,
-				Venue:  event.Name, // Assuming 'Name' is the venue, adjust as necessary
+				Venue:  event.Name,
 				Date:   event.Dates.Start.DateTime,
 			})
 		}
@@ -156,7 +147,6 @@ func handleTopArtistsConcerts(w http.ResponseWriter, r *http.Request, client spo
 		return
 	}
 
-	// Convert concerts to JSON and send it as a response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(concerts)
 }
