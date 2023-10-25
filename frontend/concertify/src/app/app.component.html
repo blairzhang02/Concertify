@@ -1,0 +1,9 @@
+<div style="text-align:center">
+  <h1>Welcome to {{ title }}!</h1>
+  <button (click)="fetchConcerts()">Load Concerts</button>
+  <div *ngFor="let concert of concerts">
+    <h2>{{ concert.Artist }}</h2>
+    <p>{{ concert.Venue }}</p>
+    <p>{{ concert.Date }}</p>
+  </div>
+</div>

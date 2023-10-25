@@ -1,0 +1,23 @@
+<!-- src/app/home/home.component.html -->
+
+<div class="home-container">
+   <h1>Welcome to Concertify!</h1>
+   <p>Your one-stop destination for all concert information</p>
+ 
+   <!-- Placeholder for Concerts; this will be dynamically loaded -->
+   <div *ngIf="concerts.length > 0; else noConcerts">
+     <h2>Upcoming Concerts:</h2>
+     <ul>
+       <li *ngFor="let concert of concerts">
+         <h3>{{ concert.Artist }}</h3>
+         <p>{{ concert.Venue }} - {{ concert.Date }}</p>
+       </li>
+     </ul>
+   </div>
+ 
+   <!-- Message to display when there are no concerts -->
+   <ng-template #noConcerts>
+     <p>No upcoming concerts at the moment. Check back soon!</p>
+   </ng-template>
+ </div>
+ 
